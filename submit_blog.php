@@ -3,7 +3,7 @@ session_start();
 
 // Redirect if not logged in
 if (!isset($_SESSION["user_id"])) {
-    header("Location: signin.html");
+    header("Location: signin.php");
     exit;
 }
 
@@ -33,10 +33,11 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
     }
 
     $fileTmpPath = $_FILES['image']['tmp_name'];
-    $fileName = time() . "_" . basename($_FILES['image']['name']);
+    $datePrefix = date("Y-m-d_His"); // format like 2025-07-03_174502
+    $originalName = basename($_FILES['image']['name']);
+    $fileName = $datePrefix . "_" . $originalName;
     $fileDest = $uploadDir . $fileName;
 
-    // Move file
     if (move_uploaded_file($fileTmpPath, $fileDest)) {
         $image_path = $fileDest;
     }
@@ -49,7 +50,7 @@ if (empty($image_path) && !empty($image_url)) {
 
 // Prepared statement
 $stmt = $conn->prepare("INSERT INTO blogs (title, category, description, user_id, image) VALUES (?, ?, ?, ?, ?)");
-$stmt->bind_param("sssiss", $title, $category, $description, $user_id, $image_path);
+$stmt->bind_param("sssis", $title, $category, $description, $user_id, $image_path);
 
 if ($stmt->execute()) {
     header("Location: add-blog.php?success=1");
